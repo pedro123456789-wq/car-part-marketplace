@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { UserProvider } from "./contexts/UserContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +17,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <UserProvider>
+          {children}
+        </UserProvider>
+      </body>
     </html>
   );
 }
+
+//Email:
+//email: purkosaparts@gmail.com
+//password: greatParts48##
+
+//Supabase:
+//email: purkosaparts@gmail.com
+//password: bigParts48##
+//db password: PartsDB48##%
+
+//Cloudflare R2:
+//email: purkosaparts@gmail.com
+//password: bigParts48##
+
+
+//TODO: 
+//Finish sign up page - done
+//Clean up parts + vehicles listed - done
+//Deploy to vercel
+//Fix filters
+//Add my parts
+//Look through entire web app to find bugs
+//Add smart lookup feature
