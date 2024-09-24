@@ -44,7 +44,7 @@ const DropDownInput: React.FC<DropdownProps> = ({
   }, []);
 
   return (
-    <div ref={dropdownRef}>
+    <div ref={dropdownRef} className="min-w-32 text-center">
       <p className="text-sm border-2 border-gray-200 p-2 rounded-lg bg-white">{selectedText || "Select a value"}</p>
 
       <div className="w-full border-2 border-gray-200 rounded-lg shadow-lg z-10">

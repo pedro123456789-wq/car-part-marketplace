@@ -9,6 +9,7 @@ import { createFrontEndClient } from "@/app/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import LoadingIndicator from "@/app/components/LoadingIndicator";
 import { useUser } from "@/app/contexts/UserContext";
+import { rimBoltPatterns, rimSizes, tireProfiles, tireSizes, tireWidths } from "@/app/types_db";
 
 interface Props {
   vehicleId: string;
@@ -47,18 +48,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
   const supabase = createFrontEndClient();
   const router = useRouter();
   const { session } = useUser();
-
-  /**
-   * Given start value, end value and interval return list of all of the values in the range
-   */
-  const getRange = (startValue: number, endValue: number, interval: number) => {
-    let output = [];
-    for (let i = startValue; i <= endValue; i += interval) {
-      output.push(i);
-    }
-    return output;
-  };
-
+  
   /**
    * Handles the image change event for the wheel input form.
    * @param index
@@ -279,44 +269,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
             <div className="w-64">
               <h1>Bolt Pattern</h1>
               <DropDownInput
-                options={[
-                  "3x98",
-                  "4x98",
-                  "4x100",
-                  "4x108",
-                  "4x110",
-                  "4x114,3",
-                  "4x130",
-                  "4x140",
-                  "5x98",
-                  "5x100",
-                  "5x105",
-                  "5x108",
-                  "5x110",
-                  "5x112",
-                  "5x114,3",
-                  "5x115",
-                  "5x118",
-                  "5x120",
-                  "5x120,6",
-                  "5x127",
-                  "5x130",
-                  "5x135",
-                  "5x139,7",
-                  "5x150",
-                  "5x165,1",
-                  "6x114,3",
-                  "6x115",
-                  "6x120",
-                  "6x127",
-                  "6x130",
-                  "6x135",
-                  "6x139,7",
-                  "6x170",
-                  "6x180",
-                  "8x165,1",
-                  "8x170",
-                ]}
+                options={rimBoltPatterns}
                 placeholder="Select a value"
                 selectedText={boltPattern}
                 setSelectedText={setBoltPattern}
@@ -326,7 +279,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
             <div className="w-64">
               <h1>Size</h1>
               <DropDownInput
-                options={getRange(10, 23, 1).map((el) => el.toString())}
+                options={rimSizes}
                 placeholder="Select a value"
                 selectedText={size}
                 setSelectedText={setSize}
@@ -342,7 +295,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
             <div>
               <h3>Width</h3>
               <DropDownInput
-                options={getRange(135, 345, 5).map((el) => el.toString())}
+                options={tireWidths}
                 placeholder="Select a value"
                 selectedText={tireWidth}
                 setSelectedText={setTireWidth}
@@ -352,7 +305,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
             <div>
               <h3>Profile</h3>
               <DropDownInput
-                options={getRange(25, 85, 5).map((el) => el.toString())}
+                options={tireProfiles}
                 placeholder="Select a value"
                 selectedText={tireProfile}
                 setSelectedText={setTireProfile}
@@ -362,7 +315,7 @@ const WheelInput: React.FC<Props> = ({ vehicleId }) => {
             <div>
               <h3>Size</h3>
               <DropDownInput
-                options={getRange(10, 23, 1).map((el) => el.toString())}
+                options={tireSizes}
                 placeholder="Select a value"
                 selectedText={tireSize}
                 setSelectedText={setTireSize}

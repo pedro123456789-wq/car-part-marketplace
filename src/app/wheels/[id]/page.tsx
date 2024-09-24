@@ -8,6 +8,8 @@ import NavigationBar from "@/app/components/NavigationBar";
 import Alert from "@/app/components/alert/Alert";
 import { useAlert } from "@/app/components/alert/useAlert";
 import { Wheel, Vehicle } from "@/app/types_db";
+import ImageGallery from "@/app/components/ImageGallery";
+import { FaArrowLeft } from "react-icons/fa";
 
 interface Props {
   params: Params;
@@ -29,6 +31,8 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
   const { showAlert, message, type, triggerAlert } = useAlert();
   const supabase = createFrontEndClient();
 
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!wheelId) {
@@ -41,16 +45,29 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
 
       try {
         // Fetch wheel data
-        const { data, error: wheelError } = await supabase
+        const { data: wheelData, error: wheelError } = await supabase
           .from("wheel")
           .select("*")
           .eq("id", wheelId)
           .single();
 
         if (wheelError) throw wheelError;
-
-        const wheelData: Wheel = data;
         setWheel(wheelData);
+
+        // Create image URLs and check if they exist
+        const urls: string[] = [];
+        for (let i = 0; i < 4; i++) {
+          const url = `/api/files/download?file_name=wheel-${wheelId}-${i}`;
+          try {
+            const response = await fetch(url, { method: "HEAD" });
+            if (response.ok) {
+              urls.push(url);
+            }
+          } catch (error) {
+            // Image doesn't exist; do nothing
+          }
+        }
+        setImageUrls(urls);
 
         // Fetch vehicle data
         const { data: vehicleData, error: vehicleError } = await supabase
@@ -96,27 +113,35 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
 
       <div className="container mx-auto p-5">
         {/* Back Button */}
-        <button className="btn btn-outline mb-5" onClick={() => router.back()}>
-          Back
+        <button
+          className="btn btn-outline mb-5"
+          onClick={() => router.back()}
+        >
+          <FaArrowLeft />
         </button>
 
         {/* Wheel Information */}
         {wheel ? (
           <div className="card bg-base-100 shadow-xl mb-10">
-            <figure>
-              <img
-                src="https://via.placeholder.com/600x400"
-                alt="Wheel"
-                className="w-full h-64 object-cover"
-              />
-            </figure>
             <div className="card-body">
-              <h2 className="card-title text-2xl">Wheel</h2>
+              {/* Image Gallery */}
+              <ImageGallery imageUrls={imageUrls} />
+
+              <h2 className="card-title text-2xl mt-5">Wheel Details</h2>
               <p>
-                <strong>Size:</strong> {wheel.tire_size}
+                <strong>Rim Bolt Pattern:</strong> {wheel.rim_bolt_pattern}
               </p>
               <p>
-                <strong>Material:</strong>
+                <strong>Rim Size:</strong> {wheel.rim_size}
+              </p>
+              <p>
+                <strong>Tire Width:</strong> {wheel.tire_width}
+              </p>
+              <p>
+                <strong>Tire Profile:</strong> {wheel.tire_profile}
+              </p>
+              <p>
+                <strong>Tire Size:</strong> {wheel.tire_size}
               </p>
               <p>{wheel.additional_information}</p>
 
@@ -136,6 +161,13 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
                   <p>
                     <strong>Fuel Type:</strong> {vehicle.fuel_type}
                   </p>
+
+                  <button
+                    className="btn btn-outline mt-2"
+                    onClick={() => router.push(`/vehicles/${vehicle.id}`)}
+                  >
+                    Full Vehicle Details
+                  </button>
                 </div>
               )}
             </div>
@@ -144,11 +176,12 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
           <p className="text-center text-xl">Wheel not found.</p>
         )}
 
+        {/* Matching Wheels */}
         <div className="w-full text-center">
-            <p className="font-bold underline">Matching Wheels</p>
+          <p className="font-bold underline text-2xl">Matching Wheels</p>
         </div>
 
-        {/* Tab Content */}
+        {/* Matching Wheels Content */}
         <div className="mt-5">
           {matchingWheels.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -159,19 +192,33 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
                 >
                   <figure>
                     <img
-                      src="https://via.placeholder.com/300"
+                      src={`/api/files/download?file_name=wheel-${matchingWheel.id}-0`}
                       alt="Wheel"
                       className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://via.placeholder.com/300";
+                      }}
                     />
                   </figure>
                   <div className="card-body">
                     <h2 className="card-title">Wheel</h2>
                     <p>
-                      <strong>Tire Size:</strong> {matchingWheel.tire_size}
+                      <strong>Rim Bolt Pattern:</strong>{" "}
+                      {matchingWheel.rim_bolt_pattern}
+                    </p>
+                    <p>
+                      <strong>Rim Size:</strong> {matchingWheel.rim_size}
+                    </p>
+                    <p>
+                      <strong>Tire Width:</strong> {matchingWheel.tire_width}
                     </p>
                     <p>
                       <strong>Tire Profile:</strong>{" "}
                       {matchingWheel.tire_profile}
+                    </p>
+                    <p>
+                      <strong>Tire Size:</strong> {matchingWheel.tire_size}
                     </p>
 
                     <button

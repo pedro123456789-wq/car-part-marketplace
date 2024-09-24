@@ -15,17 +15,29 @@ import { createFrontEndClient } from "@/app/utils/supabase/client";
 import { useAlert } from "@/app/components/alert/useAlert";
 import Alert from "@/app/components/alert/Alert";
 import LoadingIndicator from "@/app/components/LoadingIndicator";
+import {
+  DriveType,
+  DriveTypeValues,
+  FuelType,
+  FuelTypeValues,
+  TransmissionType,
+  TransmissionTypeValues,
+  VehicleType,
+} from "@/app/types_db";
+import DropDownInput from "@/app/components/DropdownInput";
 
 const NewVehicle: React.FC = () => {
-  const [vehicleType, setVehicleType] = useState<string>("car");
+  const [vehicleType, setVehicleType] = useState<VehicleType>("Car");
   const [brand, setBrand] = useState<string>("");
   const [model, setModel] = useState<string>("");
   const [year, setYear] = useState<string>("");
   const [details, setDetails] = useState<string>("");
   const [mileage, setMileage] = useState<string>("");
-  const [fuelType, setFuelType] = useState<string>("");
-  const [driveType, setDriveType] = useState<string>("");
-  const [transmission, setTransmission] = useState<string>("");
+  const [fuelType, setFuelType] = useState<FuelType | null>(null);
+  const [driveType, setDriveType] = useState<DriveType | null>(null);
+  const [transmission, setTransmission] = useState<TransmissionType | null>(
+    null
+  );
   const [numberOfSeats, setNumberOfSeats] = useState<string>("");
   const [numberOfDoors, setNumberOfDoors] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -34,14 +46,13 @@ const NewVehicle: React.FC = () => {
   const { showAlert, message, type: alertType, triggerAlert } = useAlert();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const vehicleTypes = [
-    { type: "car", label: "Car", icon: FaCar },
-    { type: "bike", label: "Bike", icon: FaMotorcycle },
-    { type: "snowmobile", label: "Snowmobile ATV", icon: FaSleigh },
-    { type: "other", label: "Other Vehicle", icon: FaBus },
+    { type: "Car", label: "Car", icon: FaCar },
+    { type: "Bike", label: "Bike", icon: FaMotorcycle },
+    { type: "Snowmobile", label: "Snowmobile ATV", icon: FaSleigh },
+    { type: "Other", label: "Other Vehicle", icon: FaBus },
   ];
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,12 +75,12 @@ const NewVehicle: React.FC = () => {
     if (!imageFile) return null;
 
     // Get the signed URL for uploading the image
-    const response = await fetch('/api/files/upload', {
-      method: 'POST',
+    const response = await fetch("/api/files/upload", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json', 
-        'file_name': `vehicle-${vehicleId}`,
-        'file_type': imageFile.type,
+        "Content-Type": "application/json",
+        file_name: `vehicle-${vehicleId}`,
+        file_type: imageFile.type,
       },
     });
 
@@ -81,11 +92,11 @@ const NewVehicle: React.FC = () => {
 
     // Upload the image to the CDN
     const uploadResponse = await fetch(url, {
-      method: 'PUT',
+      method: "PUT",
       body: imageFile,
       headers: {
-        'Content-Type': imageFile.type,
-      }
+        "Content-Type": imageFile.type,
+      },
     });
 
     if (!uploadResponse.ok) {
@@ -93,7 +104,7 @@ const NewVehicle: React.FC = () => {
     }
 
     // The image URL to be stored in the database
-    const imageUrl = url.split('?')[0];
+    const imageUrl = url.split("?")[0];
     return imageUrl;
   };
 
@@ -113,7 +124,22 @@ const NewVehicle: React.FC = () => {
       !numberOfSeats ||
       !numberOfDoors
     ) {
-      triggerAlert("Please fill in all required fields.", "error");
+      triggerAlert("Please fill in all the fields", "error");
+      return;
+    }
+
+    if (isNaN(Number(mileage))){
+      triggerAlert("Invalid value for mileage", "error");
+      return;
+    }
+
+    if (isNaN(Number(numberOfSeats))){
+      triggerAlert("Invalid value for number of seats", "error");
+      return;
+    }
+
+    if (isNaN(Number(numberOfDoors))){
+      triggerAlert("Invalid value for number of doors", "error");
       return;
     }
 
@@ -121,7 +147,7 @@ const NewVehicle: React.FC = () => {
 
     try {
       const supabase = createFrontEndClient();
-
+      
       // Prepare data to insert
       const data = {
         type: vehicleType,
@@ -137,7 +163,11 @@ const NewVehicle: React.FC = () => {
         doors_number: parseInt(numberOfDoors),
       };
 
-      const {data: vehicle, error } = await supabase.from("vehicle").insert([data]).select().single();
+      const { data: vehicle, error } = await supabase
+        .from("vehicle")
+        .insert([data])
+        .select()
+        .single();
 
       if (error) {
         triggerAlert(error.message, "error");
@@ -198,7 +228,7 @@ const NewVehicle: React.FC = () => {
                 <div
                   key={type}
                   className="flex flex-col items-center justify-center px-2 cursor-pointer"
-                  onClick={() => setVehicleType(type)}
+                  onClick={() => setVehicleType(type as VehicleType)}
                 >
                   <Icon
                     className={`text-xl ${
@@ -225,8 +255,7 @@ const NewVehicle: React.FC = () => {
               onSubmit={handleSubmit}
             >
               <div className="form-control mb-4 flex flex-col items-center">
-                <label className="label mb-2">
-                </label>
+                <label className="label mb-2"></label>
                 <div
                   className="relative w-48 h-48 border border-dashed border-gray-400 flex items-center justify-center text-gray-500 cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
@@ -332,37 +361,49 @@ const NewVehicle: React.FC = () => {
                   ></input>
                 </div>
 
-                <div className="flex flex-row space-x-2 items-center mt-2">
-                  <label className="label">
-                    <span className="label-text">Fuel type</span>
-                  </label>
-                  <input
-                    className="input input-bordered w-64 text-sm"
-                    value={fuelType}
-                    onChange={(e) => setFuelType(e.target.value)}
-                  ></input>
-                </div>
+                <div className="flex flex-col md:flex-row md:space-x-5 items-start justify-center my-5">
+                  <div className="flex flex-col items-start mt-2 w-full justify-center">
+                    <label className="label">
+                      <span className="label-text">Fuel type</span>
+                    </label>
 
-                <div className="flex flex-row space-x-2 items-center mt-2">
-                  <label className="label">
-                    <span className="label-text">Drive Type</span>
-                  </label>
-                  <input
-                    className="input input-bordered w-64 text-sm"
-                    value={driveType}
-                    onChange={(e) => setDriveType(e.target.value)}
-                  ></input>
-                </div>
+                    <DropDownInput
+                      options={FuelTypeValues as any as string[]}
+                      placeholder="Fuel Type"
+                      selectedText={fuelType || ""}
+                      setSelectedText={(text) => setFuelType(text as FuelType)}
+                    />
+                  </div>
 
-                <div className="flex flex-row space-x-2 items-center mt-2">
-                  <label className="label">
-                    <span className="label-text">Transmission</span>
-                  </label>
-                  <input
-                    className="input input-bordered w-64 text-sm"
-                    value={transmission}
-                    onChange={(e) => setTransmission(e.target.value)}
-                  ></input>
+                  <div className="flex flex-col items-start mt-2 w-full justify-center">
+                    <label className="label">
+                      <span className="label-text">Drive type</span>
+                    </label>
+
+                    <DropDownInput
+                      options={DriveTypeValues as any as string[]}
+                      placeholder="Drive Type"
+                      selectedText={driveType || ""}
+                      setSelectedText={(text) =>
+                        setDriveType(text as DriveType)
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col items-start mt-2 w-full justify-center">
+                    <label className="label">
+                      <span className="label-text">Transmission</span>
+                    </label>
+
+                    <DropDownInput
+                      options={TransmissionTypeValues as any as string[]}
+                      placeholder="Transmission"
+                      selectedText={transmission || ""}
+                      setSelectedText={(text) =>
+                        setTransmission(text as TransmissionType)
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="flex flex-row space-x-2 items-center mt-2">
