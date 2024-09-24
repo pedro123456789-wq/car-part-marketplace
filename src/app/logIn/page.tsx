@@ -145,7 +145,7 @@ export default function LogIn() {
                   href="/signIn"
                   className="font-medium text-blue-500 hover:text-blue-700"
                 >
-                  Don't have an account?
+                  Don&apos;t have an account?
                 </a>
               </div>
             </div>
