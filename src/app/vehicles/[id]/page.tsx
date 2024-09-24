@@ -189,7 +189,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
                       Bolt Pattern: {wheel.rim_bolt_pattern}
                     </h3>
                     <p>
-                      <strong>Rim Size:</strong> {wheel.rim_size}"
+                      <strong>Rim Size:</strong> {wheel.rim_size}
                     </p>
                     <p>
                       <strong>Tire Width:</strong> {wheel.tire_width}
@@ -198,7 +198,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
                       <strong>Tire Profile:</strong> {wheel.tire_profile}
                     </p>
                     <p>
-                      <strong>Tire Size:</strong> {wheel.tire_size}"
+                      <strong>Tire Size:</strong> {wheel.tire_size}
                     </p>
                     <p>{wheel.additional_information}</p>
                   </div>
