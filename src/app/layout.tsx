@@ -47,7 +47,7 @@ export default function RootLayout({
 //Fix filters (add interface for each part + filter button at the bottom that triggers filtering) - done
 //Add my parts - done
 //Finish wheels page - done
-//Make parts and wheels in vehicle page clickable
+//Make parts and wheels in vehicle page clickable - done
 //Add seller details on part
 //Look through entire web app to find bugs
 //Add smart lookup feature

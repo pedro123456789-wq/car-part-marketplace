@@ -79,17 +79,6 @@ export async function POST(req: Request) {
       throw authError;
     }
 
-    // Manually set confirmation_sent_at to mark the email as confirmed
-    // const { error: updateError } = await supabaseAdmin
-    //   .from("auth.users")
-    //   .update({ confirmation_sent_at: new Date().toISOString() })
-    //   .eq("id", authUser.user.id);
-
-    // if (updateError) {
-    //     console.error(updateError);
-    //   throw updateError;
-    // }
-
     // Insert the new user into the User table
     const { error: dbError } = await supabaseAdmin.from("user").insert([
       {

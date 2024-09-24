@@ -147,12 +147,13 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
               {parts.map((part) => (
                 <div
                   key={part.id}
-                  className="flex items-center bg-base-100 shadow-xl p-5 rounded-lg"
+                  className="flex items-center bg-base-100 shadow-xl p-5 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
+                  onClick={() => router.push(`/parts/${part.id}`)}
                 >
                   <img
-                    src="https://via.placeholder.com/150"
+                    src={`/api/files/download?file_name=part-${part.id}-0`}
                     alt="Part"
-                    className="w-32 h-32 object-cover mr-5"
+                    className="w-32 h-32 object-cover mr-5 rounded-lg"
                   />
                   <div>
                     <h3 className="text-xl font-semibold">{part.name}</h3>
@@ -177,12 +178,13 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
               {wheels.map((wheel) => (
                 <div
                   key={wheel.id}
-                  className="flex items-center bg-base-100 shadow-xl p-5 rounded-lg"
+                  className="flex items-center bg-base-100 shadow-xl p-5 rounded-lg hover:bg-gray-200 hover:cursor-pointer"
+                  onClick={() => router.push(`/wheels/${wheel.id}`)}
                 >
                   <img
-                    src="https://via.placeholder.com/150"
+                    src={`/api/files/download?file_name=wheel-${wheel.id}-0`}
                     alt="Wheel"
-                    className="w-32 h-32 object-cover mr-5"
+                    className="w-32 h-32 object-cover mr-5 rounded-lg"
                   />
                   <div>
                     <h3 className="text-xl font-semibold">
