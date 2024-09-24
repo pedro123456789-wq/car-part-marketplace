@@ -393,10 +393,10 @@ const Listings: React.FC<Props> = ({ isListSelf }) => {
                     <h2 className="card-title">
                       Bolt Pattern: {wheel.rim_bolt_pattern}
                     </h2>
-                    <p>Rim Size: {wheel.rim_size}"</p>
+                    <p>Rim Size: {wheel.rim_size}</p>
                     <p>Tire Width: {wheel.tire_width}</p>
                     <p>Tire Profile: {wheel.tire_profile}</p>
-                    <p>Tire Size: {wheel.tire_size}"</p>
+                    <p>Tire Size: {wheel.tire_size}</p>
                   </div>
                 </div>
               ))}
