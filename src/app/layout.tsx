@@ -38,16 +38,3 @@ export default function RootLayout({
 //Cloudflare R2:
 //email: purkosaparts@gmail.com
 //password: bigParts48##
-
-
-//TODO: 
-//Finish sign up page - done
-//Clean up parts + vehicles listed - done
-//Deploy to vercel - done
-//Fix filters (add interface for each part + filter button at the bottom that triggers filtering) - done
-//Add my parts - done
-//Finish wheels page - done
-//Make parts and wheels in vehicle page clickable - done
-//Add seller details on part
-//Look through entire web app to find bugs
-//Add smart lookup feature
