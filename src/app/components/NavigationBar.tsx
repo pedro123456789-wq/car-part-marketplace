@@ -10,6 +10,7 @@ import {
   FaBars,
   FaInbox,
   FaSignInAlt,
+  FaUserCircle
 } from "react-icons/fa";
 import { useUser } from "../contexts/UserContext";
 
@@ -29,9 +30,8 @@ export default function NavigationBar() {
         <div className="flex items-center">
           <a
             href="/"
-            className={`text-xl font-bold flex flex-row space-x-5 hover:text-blue-200 ${
-              window.location.pathname === "/" && "text-blue-300"
-            }`}
+            className={`text-xl font-bold flex flex-row space-x-5 hover:text-blue-200 ${window.location.pathname === "/" && "text-blue-300"
+              }`}
           >
             <h1>Purkuosa.com</h1>
             <FaHome className="w-6 h-6" />
@@ -43,9 +43,8 @@ export default function NavigationBar() {
             <>
               <a
                 href="/myParts"
-                className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-300 ${
-                  window.location.pathname === "/myParts" && "text-blue-300"
-                }`}
+                className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-300 ${window.location.pathname === "/myParts" && "text-blue-300"
+                  }`}
               >
                 <FaPlusCircle className="text-2xl" />
                 <span className="text-md">My parts</span>
@@ -53,11 +52,10 @@ export default function NavigationBar() {
 
               <a
                 href="/vehicles"
-                className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-300 ${
-                  ["/vehicles", "/newPart"].includes(
-                    window.location.pathname
-                  ) && "text-blue-300"
-                }`}
+                className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-300 ${["/vehicles", "/newPart"].includes(
+                  window.location.pathname
+                ) && "text-blue-300"
+                  }`}
               >
                 <FaWrench className="text-2xl" />
                 <span className="text-md">Sell parts</span>
@@ -68,6 +66,14 @@ export default function NavigationBar() {
               >
                 <FaRegCommentAlt className="text-2xl" />
                 <span className="text-md">Messages</span>
+              </a>
+              <a
+                href="/profile"
+                className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-200 ${window.location.pathname === "/profile" && "text-blue-300"
+                  }`}
+              >
+                <FaUserCircle className="text-2xl" />
+                <span className="text-md">My Profile</span>
               </a>
               <a
                 onClick={() => logOut()}
@@ -131,6 +137,14 @@ export default function NavigationBar() {
                 >
                   <FaRegCommentAlt className="text-xl" />
                   <span>Messages</span>
+                </a>
+                <a
+                  href="/profile"
+                  className={`flex flex-col justify-center items-center space-y-2 hover:text-blue-200 ${window.location.pathname === "/profile" && "text-blue-300"
+                    }`}
+                >
+                  <FaUserCircle className="text-2xl" />
+                  <span className="text-md">My Profile</span>
                 </a>
                 <a
                   onClick={() => logOut()}
