@@ -103,3 +103,30 @@ export interface Wheel {
     owner_id: string;
     vehicle_id: number;
 }
+
+
+export interface User {
+    email: string;
+    uuid: string;
+    name: string;
+    phone: string;
+    address: string;
+    postcode: string;
+    area: string;
+    business_id: string;
+    company_name: string;
+    account_type: string;
+}
+export interface Conversation {
+    id: string;
+    user_one: string;
+    user_two: string;
+}
+
+export interface Message {
+    id: string;
+    sender_id: string;
+    conversation_id: string;
+    created_at: string;
+    content: string;
+}
