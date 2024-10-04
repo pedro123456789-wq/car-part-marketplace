@@ -123,7 +123,7 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
   if (isLoading) return <LoadingIndicator />;
 
   return (
-    <>
+    <div>
       <NavigationBar />
       {showAlert && <Alert message={message} type={type} />}
 
@@ -263,7 +263,7 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
           }
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -196,7 +196,7 @@ const NewVehicle: React.FC = () => {
   }
 
   return (
-    <>
+    <div>
       {showAlert && (
         <div className="absolute top-0 w-full">
           <Alert message={message} type={alertType} />
@@ -261,7 +261,7 @@ const NewVehicle: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {imagePreview ? (
-                    <>
+                    <div>
                       <img
                         src={imagePreview}
                         alt="Vehicle"
@@ -277,7 +277,7 @@ const NewVehicle: React.FC = () => {
                       >
                         <FaTrash />
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <span>Select Image</span>
                   )}
@@ -440,7 +440,7 @@ const NewVehicle: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
