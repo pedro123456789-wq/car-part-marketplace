@@ -39,7 +39,10 @@ const MessageItem: FC<MessageProps> = ({ loggedInUserId, message, senderName = "
                     }`}
             >
                 <p className="message-text text-sm">{message.content}</p>
-                <p className="message-time text-[9px] text-white">
+                <p className={`message-time text-[9px]  ${isSentByLoggedInUser
+                    ? "text-white"
+                    : "text-black"
+                    }`}>
                     {dayjs(message.created_at).format("HH:mm")}
                 </p>
             </div>

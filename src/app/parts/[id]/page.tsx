@@ -306,7 +306,14 @@ const PartDetails: React.FC<Props> = ({ params }) => {
             part && loggedInUserId &&
             <div className="flex-1 flex flex-col gap-5">
               <SellerInformation sellerId={part?.owner_id} />
-              <Inbox recipient={part?.owner_id} loggedInUserId={loggedInUserId} />
+              {
+                loggedInUserId != part?.owner_id &&
+                <a href={`/chat?newRecipientId=${part?.owner_id}`}>
+                  <button className="btn btn-primary w-full">
+                    Send Message
+                  </button>
+                </a>
+              }
             </div>
           }
         </div>

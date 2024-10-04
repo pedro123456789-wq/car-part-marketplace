@@ -258,7 +258,15 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
             wheel && loggedInUserId &&
             <div className="flex-1 flex flex-col gap-5">
               <SellerInformation sellerId={wheel?.owner_id} />
-              <Inbox recipient={wheel?.owner_id} loggedInUserId={loggedInUserId} />
+              {
+                loggedInUserId != wheel?.owner_id &&
+                <a href={`/chat?newRecipientId=${wheel?.owner_id}`}>
+                  <button className="btn btn-primary w-full">
+                    Send Message
+                  </button>
+                </a>
+              }
+
             </div>
           }
         </div>

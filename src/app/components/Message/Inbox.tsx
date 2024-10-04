@@ -1,46 +1,41 @@
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { createFrontEndClient } from "@/app/utils/supabase/client";
 import { User, Message, Conversation } from "@/app/types_db";
 import MessageItem from "./Message";
 
-
-
 interface InboxProps {
+    className: string;
     recipient: string; // UUID of the recipient
     loggedInUserId: string; // UUID of the logged-in user
 }
 
-const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
+const Inbox: FC<InboxProps> = ({ className = "", recipient, loggedInUserId }) => {
     const supabase = createFrontEndClient();
 
     const [messages, setMessages] = useState<Message[]>([]);
     const [conversation, setConversation] = useState<Conversation | null>(null);
     const [newMessage, setNewMessage] = useState<string>("");
 
-    const [senderName, setSenderName] = useState<string>("")
+    const [senderName, setSenderName] = useState<string>("");
     const [recipientName, setRecipientName] = useState<string>("");
 
+    const messagesContainerRef = useRef<HTMLDivElement>(null); // Create a ref for messages container
+
     useEffect(() => {
-        // Fetch conversation between logged-in user and recipient
         const fetchConversation = async () => {
             const { data: conversations, error } = await supabase
                 .from("conversation")
                 .select("*")
-                .or(
-                    `user_one.eq.${loggedInUserId},user_two.eq.${loggedInUserId}`
-                )
-                .or(
-                    `user_one.eq.${recipient},user_two.eq.${recipient}`
-                )
+                .or(`user_one.eq.${loggedInUserId},user_two.eq.${loggedInUserId}`)
+                .or(`user_one.eq.${recipient},user_two.eq.${recipient}`)
                 .maybeSingle();
 
             if (error) {
                 console.error("Error fetching conversation:", error);
             } else if (conversations) {
                 setConversation(conversations);
-                // Fetch messages for the conversation
                 fetchMessages(conversations.id);
             }
         };
@@ -79,7 +74,7 @@ const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
                 .eq("uuid", recipient)
                 .single();
             if (error) {
-                console.error("Error fetching sender's name:", error);
+                console.error("Error fetching recipient's name:", error);
             } else {
                 setRecipientName(data?.name || "You");
             }
@@ -88,12 +83,43 @@ const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
         fetchSenderName();
         fetchRecipientName();
         fetchConversation();
-    }, [recipient, loggedInUserId]);
+
+        // Set up real-time subscription for messages
+        const messageSubscription = supabase
+            .channel("public:messages")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "messages" },
+                (payload) => {
+                    const msgContent: Message = payload.new as Message;
+
+                    // Check if the conversation_id matches
+                    if (msgContent.conversation_id === conversation?.id) {
+                        setMessages((prevMessages) => [...prevMessages, msgContent]);
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            // Cleanup subscription on unmount
+            supabase.removeChannel(messageSubscription);
+        };
+    }, [recipient, loggedInUserId, conversation?.id]);
+
+    // Scroll the messages container to the bottom
+    const scrollToBottom = () => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+    };
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages])
 
     const handleSendMessage = async () => {
         if (!newMessage.trim()) return;
 
-        // If no conversation exists, create one
         let conversationId = conversation?.id;
         if (!conversationId) {
             const { data: newConversation, error } = await supabase
@@ -114,7 +140,6 @@ const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
             setConversation(newConversation);
         }
 
-        // Insert new message
         const { error: messageError } = await supabase.from("messages").insert({
             sender_id: loggedInUserId,
             conversation_id: conversationId,
@@ -125,7 +150,6 @@ const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
             console.error("Error sending message:", messageError);
         } else {
             setNewMessage(""); // Clear input
-            // Fetch updated messages
             const { data: updatedMessages, error } = await supabase
                 .from("messages")
                 .select("*")
@@ -134,27 +158,31 @@ const Inbox: FC<InboxProps> = ({ recipient, loggedInUserId }) => {
 
             if (error) {
                 console.error("Error fetching updated messages:", error);
-            } else {
-                setMessages(updatedMessages);
             }
         }
     };
 
-
-
     return (
-        <div className="card rounded-sm bg-base-100 shadow-xl mb-10 p-2 min-h-[400px] flex flex-col">
+        <div className={`card rounded-sm bg-base-100 shadow-xl mb-10 p-2 min-h-[400px] flex flex-col ${className}`}>
             <div className="text-lg font-semibold mb-5">Inbox</div>
-            <div className="messages-container h-64 overflow-y-scroll custom-scrollbar">
+            <div
+                className="messages-container h-[100%] overflow-y-scroll custom-scrollbar"
+                ref={messagesContainerRef} // Attach ref to the messages container
+            >
                 {messages.length > 0 ? (
                     messages.map((message) => (
-                        <MessageItem message={message} loggedInUserId={loggedInUserId} senderName={senderName} recipientName={recipientName} />
+                        <MessageItem
+                            key={message.id}
+                            message={message}
+                            loggedInUserId={loggedInUserId}
+                            senderName={senderName}
+                            recipientName={recipientName}
+                        />
                     ))
                 ) : (
                     <p>No messages yet.</p>
                 )}
             </div>
-            {/* Message Input */}
             <div className="flex-1 flex w-full items-end">
                 <div className="w-full message-input-container mt-5 flex flex-row border-[1px] rounded-l-sm border-neutral-500">
                     <input

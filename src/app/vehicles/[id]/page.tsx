@@ -232,9 +232,16 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
           </div>
           {
             vehicle && loggedInUserId &&
-            <div className="flex-1 flex flex-col gap-5">
+            <div className="flex-1 flex flex-col gap-1">
               <SellerInformation sellerId={vehicle?.creator} />
-              <Inbox recipient={vehicle?.creator} loggedInUserId={loggedInUserId} />
+              {
+                loggedInUserId != vehicle?.creator &&
+                <a href={`/chat?newRecipientId=${vehicle?.creator}`}>
+                  <button className="btn btn-primary w-full">
+                    Send Message
+                  </button>
+                </a>
+              }
             </div>
           }
         </div>

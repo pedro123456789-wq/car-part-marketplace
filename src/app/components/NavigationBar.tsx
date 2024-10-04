@@ -61,7 +61,7 @@ export default function NavigationBar() {
                 <span className="text-md">Sell parts</span>
               </a>
               <a
-                href="#"
+                href="/chat"
                 className="flex flex-col justify-center items-center space-y-2 hover:text-blue-200"
               >
                 <FaRegCommentAlt className="text-2xl" />
