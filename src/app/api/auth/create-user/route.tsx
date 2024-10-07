@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       await supabaseAdmin.auth.admin.createUser({
         email,
         password,
-        email_confirm: true
+        email_confirm: false
       });
 
     if (authError || !authUser) {

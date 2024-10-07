@@ -23,7 +23,6 @@ export default function LogIn() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { session } = useUser();
 
-
   const handleLogIn = async () => {
     if (email.length === 0 || password.length === 0) {
       triggerAlert("You must enter an email and a password", "error");
@@ -31,7 +30,7 @@ export default function LogIn() {
     }
 
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -42,6 +41,16 @@ export default function LogIn() {
       return;
     }
 
+    // Check if the user has confirmed their email
+    const user = data.user;
+    if (user && !user.email_confirmed_at) {
+      // If the user's email is not confirmed, show an error message
+      triggerAlert("Please verify your email address before logging in.", "error");
+      setIsLoading(false);
+      return;
+    }
+
+    // Redirect to the homepage if login is successful and email is confirmed
     router.push("/");
   };
 
@@ -55,10 +64,10 @@ export default function LogIn() {
     setIsLoading(false);
 
     //if user has just signed up, display a success message
-    if (searchParams.get('justJoined')){
-      triggerAlert("Account created successfully. You can now log in.", "success");
+    if (searchParams.get('justJoined')) {
+      triggerAlert("Account created successfully. Please verify email to login.", "success");
     }
-    
+
   };
 
   useEffect(() => {
