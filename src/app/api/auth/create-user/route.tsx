@@ -68,14 +68,16 @@ export async function POST(req: Request) {
 
   try {
     // Create a new Supabase auth user
-    const { data: authUser, error: authError } =
-      await supabaseAdmin.auth.admin.createUser({
+     const { data: { user }, error: authError } =
+      await supabaseAdmin.auth.signUp({
         email,
         password,
-        email_confirm: false
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/`
+        }
       });
 
-    if (authError || !authUser) {
+    if (authError || !user) {
       throw authError;
     }
 
@@ -90,13 +92,13 @@ export async function POST(req: Request) {
         business_id: business_id || null, // Null if not provided
         company_name: company_name || null, // Null if not provided
         account_type,
-        uuid: authUser.user.id, // Use the id from the created auth user
+        uuid: user.id, // Use the id from the created auth user
       },
     ]);
 
     if (dbError) {
       // Delete the auth user if database insertion fails
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
+      await supabaseAdmin.auth.admin.deleteUser(user.id);
       throw dbError;
     }
 
