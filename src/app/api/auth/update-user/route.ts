@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { decode } from "jsonwebtoken";
-import { error } from "console";
 
 // Initialize Supabase client with service role key
 const supabaseAdmin = createClient(
