@@ -38,3 +38,7 @@ export default function RootLayout({
 //Cloudflare R2:
 //email: purkosaparts@gmail.com
 //password: bigParts48##
+
+//Resend:
+//email: purkosaparts@gmail.com
+//password: bigParts48##
