@@ -27,30 +27,20 @@ const MessageItem: FC<MessageProps> = ({ loggedInUserId, message, senderName = "
             className={`message-item flex items-center gap-1 mb-3 ${isSentByLoggedInUser ? "justify-end" : "justify-start"
                 }`}
         >
-            {!isSentByLoggedInUser && (
-                <div className="avatar bg-gray-300 rounded-full w-10 h-10 flex items-center justify-center">
-                    {getUserAvatar(recipientName)}
-                </div>
-            )}
             <div
-                className={`message-content ml-3 px-2 py-1 rounded-lg ${isSentByLoggedInUser
+                className={`message-content ml-3 py-1 pr-5 pl-2 rounded-lg ${isSentByLoggedInUser
                     ? "bg-blue-500 text-white self-end"
                     : "bg-gray-200 text-black"
                     }`}
             >
                 <p className="message-text text-sm">{message.content}</p>
-                <p className={`message-time text-[9px]  ${isSentByLoggedInUser
+                <p className={`message-time text-[9px] ${isSentByLoggedInUser
                     ? "text-white"
                     : "text-black"
                     }`}>
                     {dayjs(message.created_at).format("HH:mm")}
                 </p>
             </div>
-            {isSentByLoggedInUser && (
-                <div className="avatar bg-gray-300 rounded-full w-8 h-8 flex items-center justify-center">
-                    {getUserAvatar(senderName)}
-                </div>
-            )}
         </div>
     );
 };

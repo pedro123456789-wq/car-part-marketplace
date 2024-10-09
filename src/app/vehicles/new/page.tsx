@@ -128,17 +128,17 @@ const NewVehicle: React.FC = () => {
       return;
     }
 
-    if (isNaN(Number(mileage))){
+    if (isNaN(Number(mileage))) {
       triggerAlert("Invalid value for mileage", "error");
       return;
     }
 
-    if (isNaN(Number(numberOfSeats))){
+    if (isNaN(Number(numberOfSeats))) {
       triggerAlert("Invalid value for number of seats", "error");
       return;
     }
 
-    if (isNaN(Number(numberOfDoors))){
+    if (isNaN(Number(numberOfDoors))) {
       triggerAlert("Invalid value for number of doors", "error");
       return;
     }
@@ -147,7 +147,7 @@ const NewVehicle: React.FC = () => {
 
     try {
       const supabase = createFrontEndClient();
-      
+
       // Prepare data to insert
       const data = {
         type: vehicleType,
@@ -261,7 +261,7 @@ const NewVehicle: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {imagePreview ? (
-                    <div>
+                    <>
                       <img
                         src={imagePreview}
                         alt="Vehicle"
@@ -277,7 +277,7 @@ const NewVehicle: React.FC = () => {
                       >
                         <FaTrash />
                       </button>
-                    </div>
+                    </>
                   ) : (
                     <span>Select Image</span>
                   )}

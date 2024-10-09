@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation"; // Import searchParams hook
 import Chat from "../components/Message/Chat";
 import { createFrontEndClient } from "@/app/utils/supabase/client";
+import NavigationBar from "../components/NavigationBar";
 
 const Page = () => {
     const supabase = createFrontEndClient();
@@ -91,6 +92,7 @@ const Page = () => {
 
     return (
         <div>
+            <NavigationBar />
             <Chat loggedInUserId={loggedInUserId} newRecipient={newRecipient} />
         </div>
     );

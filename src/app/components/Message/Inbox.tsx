@@ -163,8 +163,7 @@ const Inbox: FC<InboxProps> = ({ className = "", recipient, loggedInUserId }) =>
     };
 
     return (
-        <div className={`card rounded-sm bg-base-100 shadow-xl mb-10 p-2 min-h-[400px] flex flex-col ${className}`}>
-            <div className="text-lg font-semibold mb-5">Inbox</div>
+        <div className={`card rounded-sm bg-base-100 shadow-xl mb-10 p-2 max-h-screen flex flex-col ${className}`}>
             <div
                 className="messages-container h-[100%] overflow-y-scroll custom-scrollbar"
                 ref={messagesContainerRef} // Attach ref to the messages container
