@@ -23,64 +23,44 @@ const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
 
     useEffect(() => {
         const fetchConversations = async (userId: string) => {
+            // Fetch conversations and join with user table to get user names
             const { data: conversationData, error } = await supabase
                 .from("conversation")
-                .select("*")
-                .or(`user_one.eq.${userId},user_two.eq.${userId}`);
+                .select(`
+                    *,
+                    user_one_user: user!conversation_user_one_fkey (name, email, uuid),
+                    user_two_user: user!conversation_user_two_fkey (name, email, uuid)
+                `)
+                .or(`user_one.eq.${userId},user_two.eq.${userId}`)
+                .order('created_at', { ascending: false });
 
             if (error) {
                 console.error("Error fetching conversations:", error);
             } else {
-                const enrichedConversations = await enrichConversationsWithUserNames(
-                    conversationData,
-                    userId
-                );
-                setConversations(enrichedConversations);
-            }
-        };
-
-        const enrichConversationsWithUserNames = async (
-            conversations: Conversation[],
-            userId: string
-        ): Promise<ConversationWithUserNames[]> => {
-            return await Promise.all(
-                conversations.map(async (conversation) => {
-                    const otherUserId =
+                const enrichedConversations = conversationData.map((conversation) => {
+                    // Determine the other user
+                    const otherUser =
                         conversation.user_one === userId
-                            ? conversation.user_two
-                            : conversation.user_one;
+                            ? conversation.user_two_user
+                            : conversation.user_one_user;
 
-                    const otherUserName = await fetchUserName(otherUserId);
+                    // Extract the name or email (fallback)
+                    const otherUserName = otherUser.name?.trim()
+                        ? otherUser.name
+                        : otherUser.email;
+
                     return {
                         ...conversation,
                         otherUserName,
                     };
-                })
-            );
+                });
+                setConversations(enrichedConversations);
+            }
         };
 
-        const fetchUserName = async (userId: string): Promise<string> => {
-            const { data: user, error } = await supabase
-                .from("user")
-                .select("name, email")
-                .eq("uuid", userId)
-                .single();
+        if (loggedInUserId) fetchConversations(loggedInUserId as string);
+    }, [loggedInUserId, newRecipient]);
 
-            if (error) {
-                console.error("Error fetching user:", error);
-                return "Unknown User";
-            }
-
-            if (!user?.name?.trim()) {
-                return user.email.split("@")[0];
-            }
-
-            return user.name;
-        };
-
-        if (loggedInUserId)
-            fetchConversations(loggedInUserId as string);
-    }, [loggedInUserId]);
 
     const handleConversationClick = (conversation: ConversationWithUserNames) => {
         const recipient =
@@ -118,13 +98,12 @@ const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
                     {filteredConversations.map((conversation) => (
                         <li
                             key={conversation.id}
-                            className={`px-2 py-4 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                                selectedRecipient &&
+                            className={`px-2 py-4 cursor-pointer rounded-lg hover:bg-gray-100 ${selectedRecipient &&
                                 (conversation.user_one === selectedRecipient ||
                                     conversation.user_two === selectedRecipient)
-                                    ? "bg-gray-100"
-                                    : ""
-                            }`}
+                                ? "bg-gray-100"
+                                : ""
+                                }`}
                             onClick={() => handleConversationClick(conversation)}
                         >
                             {conversation.otherUserName}

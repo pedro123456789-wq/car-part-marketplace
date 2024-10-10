@@ -9,6 +9,7 @@ import { useUser } from "../contexts/UserContext";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,7 +26,7 @@ export default function SignUp() {
 
   // Client-side validation function
   const validateForm = () => {
-    if (!email || !password || !phone || !address || !postCode || !area || !accountType) {
+    if (!email || !name || !password || !phone || !address || !postCode || !area || !accountType) {
       triggerAlert("All fields must be filled", "error");
       return false;
     }
@@ -55,6 +56,7 @@ export default function SignUp() {
         },
         body: JSON.stringify({
           email,
+          name,
           password,
           phone,
           address,
@@ -156,6 +158,18 @@ export default function SignUp() {
                     className="input input-bordered"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="form-control">
+                  <label className="label">Name</label>
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    className="input input-bordered"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                   />
                 </div>
               </div>

@@ -12,6 +12,7 @@ const supabaseAdmin = createClient(
 
 interface CreateUserRequest {
   email: string;
+  name: string;
   password: string;
   phone: string;
   address: string;
@@ -25,6 +26,7 @@ interface CreateUserRequest {
 export async function POST(req: Request) {
   const {
     email,
+    name,
     password,
     phone,
     address,
@@ -38,6 +40,7 @@ export async function POST(req: Request) {
   // Server-side validation
   if (
     !email ||
+    !name ||
     !password ||
     !phone ||
     !address ||
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
 
   try {
     // Create a new Supabase auth user
-     const { data: { user }, error: authError } =
+    const { data: { user }, error: authError } =
       await supabaseAdmin.auth.signUp({
         email,
         password,
@@ -85,6 +88,7 @@ export async function POST(req: Request) {
     const { error: dbError } = await supabaseAdmin.from("user").insert([
       {
         email,
+        name,
         phone,
         address,
         postcode,

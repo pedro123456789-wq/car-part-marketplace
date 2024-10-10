@@ -70,13 +70,13 @@ const Page = () => {
                     console.log("Created new conversation:", conversationId);
 
                     // Insert first message in the new conversation
-                    const { error: messageError } = await supabase.from("messages").insert({
-                        sender_id: loggedInUserId,
-                        conversation_id: conversationId,
-                        content: "Hi, Nice to meet you.",
-                    });
+                    // const { error: messageError } = await supabase.from("messages").insert({
+                    //     sender_id: loggedInUserId,
+                    //     conversation_id: conversationId,
+                    //     content: "Hi, Nice to meet you.",
+                    // });
 
-                    if (messageError) throw messageError;
+                    // if (messageError) throw messageError;
                 }
 
                 // Set newRecipient to be passed to the Chat component
