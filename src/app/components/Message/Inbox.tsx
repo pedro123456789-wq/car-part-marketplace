@@ -190,6 +190,12 @@ const Inbox: FC<InboxProps> = ({ className = "", recipient, loggedInUserId }) =>
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type your message..."
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault(); // Prevents the default action (optional, but helps avoid form submission issues)
+                                handleSendMessage(); // Call the send message function
+                            }
+                        }}
                     />
                     <button
                         className="btn btn-primary rounded-none "

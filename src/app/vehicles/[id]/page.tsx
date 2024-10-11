@@ -96,6 +96,59 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
     fetchData();
   }, [vehicleId]);
 
+  const handleConversation = async (e: any, recipientId: string) => {
+    e.preventDefault();
+    try {
+      // Check if a conversation already exists between loggedInUserId and recipientId
+      const { data: existingConversation, error: conversationCheckError } = await supabase
+        .from("conversation")
+        .select("*")
+        .or(`user_one.eq.${loggedInUserId},user_two.eq.${loggedInUserId}`)
+        .or(`user_one.eq.${recipientId},user_two.eq.${recipientId}`)
+        .maybeSingle();
+
+      if (conversationCheckError && conversationCheckError.code !== "PGRST116") {
+        throw conversationCheckError; // Handle other errors, except "no data" error
+      }
+
+      let conversationId;
+
+      if (existingConversation) {
+        // Conversation already exists, use the existing conversation ID
+        conversationId = existingConversation.id;
+        console.log("Conversation already exists:", conversationId);
+      } else {
+        // No conversation exists, create a new one
+        const { data: newConversation, error } = await supabase
+          .from("conversation")
+          .insert({
+            user_one: loggedInUserId,
+            user_two: recipientId,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        conversationId = newConversation.id;
+        console.log("Created new conversation:", conversationId);
+
+        // Insert first message in the new conversation
+        // const { error: messageError } = await supabase.from("messages").insert({
+        //     sender_id: loggedInUserId,
+        //     conversation_id: conversationId,
+        //     content: "Hi, Nice to meet you.",
+        // });
+
+        // if (messageError) throw messageError;
+      }
+      window.location.href = `/chat?chatId=${recipientId}`
+
+    } catch (error) {
+      console.log("ERROR TRYING TO HANDLE CONVERSATION[+]")
+    }
+  }
+
   if (isLoading) return <LoadingIndicator />;
 
   return (
@@ -236,11 +289,9 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
               <SellerInformation sellerId={vehicle?.creator} />
               {
                 loggedInUserId != vehicle?.creator &&
-                <a href={`/chat?newRecipientId=${vehicle?.creator}`}>
-                  <button className="btn btn-primary w-full">
-                    Send Message
-                  </button>
-                </a>
+                <button className="btn btn-primary w-full" onClick={(e: any) => handleConversation(e, vehicle?.creator)}>
+                  Send Message
+                </button>
               }
             </div>
           }
