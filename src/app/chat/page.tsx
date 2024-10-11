@@ -9,11 +9,10 @@ import NavigationBar from "../components/NavigationBar";
 const Page = () => {
     const supabase = createFrontEndClient();
     const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
-    const [newRecipient, setNewRecipient] = useState<string | null>(null); // Track newRecipient for passing to Chat
 
     const searchParams = useSearchParams();
     const newChat = searchParams.get("newChat");
-    const newRecipientId = searchParams.get("chatId");
+    const selectedChatId = searchParams.get('chatId') ?? null;
 
     useEffect(() => {
         const fetchLoggedInUser = async () => {
@@ -84,15 +83,11 @@ const Page = () => {
         fetchLoggedInUser();
     }, []);
 
-    useEffect(() => {
-        if (newRecipientId)
-            setNewRecipient(newRecipientId)
-    }, [newRecipientId])
 
     return (
         <div>
             <NavigationBar />
-            <Chat loggedInUserId={loggedInUserId} newRecipient={newRecipient} />
+            <Chat loggedInUserId={loggedInUserId} selectedConversationId={selectedChatId} />
         </div>
     );
 };

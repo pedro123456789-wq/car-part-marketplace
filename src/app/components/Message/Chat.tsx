@@ -11,10 +11,9 @@ interface ConversationWithUserNames extends Conversation {
 
 interface ChatProps {
     loggedInUserId: string | null;
-    newRecipient: string | null;
+    selectedConversationId: string | null;
 }
-
-const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
+const Chat: FC<ChatProps> = ({ loggedInUserId, selectedConversationId = null }) => {
     const supabase = createFrontEndClient();
     const [conversations, setConversations] = useState<ConversationWithUserNames[]>([]);
     const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null);
@@ -38,6 +37,9 @@ const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
                 console.error("Error fetching conversations:", error);
             } else {
                 const enrichedConversations = conversationData.map((conversation) => {
+                    if (selectedConversationId && selectedConversationId == conversation.id) {
+                        handleConversationClick(conversation)
+                    }
                     // Determine the other user
                     const otherUser =
                         conversation.user_one === userId
@@ -59,7 +61,7 @@ const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
         };
 
         if (loggedInUserId) fetchConversations(loggedInUserId as string);
-    }, [loggedInUserId, newRecipient]);
+    }, [loggedInUserId, selectedConversationId]);
 
 
     const handleConversationClick = (conversation: ConversationWithUserNames) => {
@@ -76,10 +78,6 @@ const Chat: FC<ChatProps> = ({ loggedInUserId, newRecipient = null }) => {
         conversation.otherUserName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    useEffect(() => {
-        if (newRecipient)
-            setSelectedRecipient(newRecipient);
-    }, [newRecipient]);
 
     return (
         <div className="flex max-h-screen">

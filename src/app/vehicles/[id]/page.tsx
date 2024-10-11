@@ -142,7 +142,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
         // if (messageError) throw messageError;
       }
-      window.location.href = `/chat?chatId=${recipientId}`
+      window.location.href = `/chat?chatId=${conversationId}`
 
     } catch (error) {
       console.log("ERROR TRYING TO HANDLE CONVERSATION[+]")
