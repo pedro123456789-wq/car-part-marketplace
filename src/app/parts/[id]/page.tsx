@@ -9,7 +9,7 @@ import Alert from "@/app/components/alert/Alert";
 import { useAlert } from "@/app/components/alert/useAlert";
 import { Part, Vehicle } from "@/app/types_db";
 import ImageGallery from "@/app/components/ImageGallery";
-import { FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaSave } from "react-icons/fa";
 
 import SellerInformation from "@/app/components/SellerInfo";
 import Inbox from "@/app/components/Message/Inbox";
@@ -37,18 +37,19 @@ const PartDetails: React.FC<Props> = ({ params }) => {
   const supabase = createFrontEndClient();
 
   const [imageUrls, setImageUrls] = useState<string[]>([]);
-
   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
+
+  // Editable state management
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editablePart, setEditablePart] = useState<Part | null>(null);
 
   useEffect(() => {
     // Fetch the logged-in user's UUID
     const fetchLoggedInUser = async () => {
       const { data, error } = await supabase.auth.getSession();
-
       if (error) {
         console.error("Error fetching session:", error);
       } else if (data.session?.user) {
-        // Set the user's uuid (which is the user's unique identifier in Supabase)
         setLoggedInUserId(data.session.user.id);
       }
     };
@@ -74,6 +75,7 @@ const PartDetails: React.FC<Props> = ({ params }) => {
 
         if (partError) throw partError;
         setPart(partData);
+        setEditablePart(partData); // Initialize editable part data
 
         // Create image URLs and check if they exist
         const urls: string[] = [];
@@ -100,7 +102,7 @@ const PartDetails: React.FC<Props> = ({ params }) => {
         if (vehicleError) throw vehicleError;
         setVehicle(vehicleData);
 
-        // Fetch matching parts (same name and number, different vehicles)
+        // Fetch matching parts
         const { data: matchingPartsData, error: matchingPartsError } =
           await supabase
             .from("part")
@@ -134,11 +136,9 @@ const PartDetails: React.FC<Props> = ({ params }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partId]);
 
-
   const handleConversation = async (e: any, recipientId: string) => {
     e.preventDefault();
     try {
-      // Check if a conversation already exists between loggedInUserId and recipientId
       const { data: existingConversation, error: conversationCheckError } = await supabase
         .from("conversation")
         .select("*")
@@ -147,17 +147,14 @@ const PartDetails: React.FC<Props> = ({ params }) => {
         .maybeSingle();
 
       if (conversationCheckError && conversationCheckError.code !== "PGRST116") {
-        throw conversationCheckError; // Handle other errors, except "no data" error
+        throw conversationCheckError;
       }
 
       let conversationId;
 
       if (existingConversation) {
-        // Conversation already exists, use the existing conversation ID
         conversationId = existingConversation.id;
-        console.log("Conversation already exists:", conversationId);
       } else {
-        // No conversation exists, create a new one
         const { data: newConversation, error } = await supabase
           .from("conversation")
           .insert({
@@ -170,22 +167,41 @@ const PartDetails: React.FC<Props> = ({ params }) => {
         if (error) throw error;
 
         conversationId = newConversation.id;
-        console.log("Created new conversation:", conversationId);
-
-        // Insert first message in the new conversation
-        // const { error: messageError } = await supabase.from("messages").insert({
-        //     sender_id: loggedInUserId,
-        //     conversation_id: conversationId,
-        //     content: "Hi, Nice to meet you.",
-        // });
-
-        // if (messageError) throw messageError;
       }
-      window.location.href = `/chat?chatId=${conversationId}`
-
+      window.location.href = `/chat?chatId=${conversationId}`;
 
     } catch (error) {
-      console.log("ERROR TRYING TO HANDLE CONVERSATION[+]")
+      console.log("ERROR TRYING TO HANDLE CONVERSATION[+]");
+    }
+  }
+
+  const handleEdit = () => {
+    setIsEditing(true);
+    if (part)
+      setEditablePart({ ...part }); // Create a copy of the part to edit
+  };
+
+  const handleSave = async () => {
+    if (!editablePart) return;
+
+    try {
+      const { error } = await supabase
+        .from("part")
+        .update({
+          name: editablePart.name,
+          number: editablePart.number,
+          info: editablePart.info,
+        })
+        .eq("id", partId);
+
+      if (error) throw error;
+
+      setPart(editablePart); // Update the part state with the edited values
+      setIsEditing(false);
+      triggerAlert("Part updated successfully.", "success");
+    } catch (error) {
+      console.error("Error updating part:", error);
+      triggerAlert("Error updating part.", "error");
     }
   }
 
@@ -214,42 +230,87 @@ const PartDetails: React.FC<Props> = ({ params }) => {
                   {/* Image Gallery */}
                   <ImageGallery imageUrls={imageUrls} />
 
-                  <h2 className="card-title text-2xl mt-5">{part.name}</h2>
-                  <p>
-                    <strong>Part Number:</strong> {part.number}
-                  </p>
-                  <p>{part.info}</p>
-                  {vehicle && (
-                    <div className="mt-5">
-                      <h3 className="text-xl font-bold">Vehicle Information:</h3>
-                      <p>
-                        <strong>Vehicle:</strong> {vehicle.brand} {vehicle.model} (
-                        {vehicle.year})
-                      </p>
-                      <p>
-                        <strong>Type:</strong> {vehicle.type}
-                      </p>
-                      <p>
-                        <strong>Mileage:</strong> {vehicle.mileage_km} km
-                      </p>
-                      <p>
-                        <strong>Fuel Type:</strong> {vehicle.fuel_type}
-                      </p>
-
-                      <button
-                        className="btn btn-outline mt-2"
-                        onClick={() => router.push(`/vehicles/${vehicle.id}`)}
-                      >
-                        Full Vehicle Details
+                  <div className="flex items-center justify-between">
+                    {editablePart && isEditing ? (
+                      <input
+                        type="text"
+                        className="input input-bordered w-full"
+                        value={editablePart?.name}
+                        onChange={(e) => setEditablePart({ ...editablePart, name: e.target.value })}
+                      />
+                    ) : (
+                      <h2 className="card-title text-2xl mt-5">{part.name}</h2>
+                    )}
+                    {
+                      loggedInUserId == part?.owner_id && !isEditing &&
+                      <button className="btn btn-ghost text-2xl" onClick={handleEdit}>
+                        <FaEdit />
                       </button>
-                    </div>
+                    }
+                  </div>
+
+                  {editablePart && isEditing ? (
+                    <input
+                      type="text"
+                      className="input input-bordered w-full mt-2"
+                      value={editablePart.number}
+                      onChange={(e) => setEditablePart({ ...editablePart, number: e.target.value })}
+                    />
+                  ) : (
+                    <h3 className="text-lg mt-2">Number: {part.number}</h3>
                   )}
+
+                  {editablePart && isEditing ? (
+                    <textarea
+                      className="textarea textarea-bordered w-full mt-2"
+                      value={editablePart.info}
+                      onChange={(e) => setEditablePart({ ...editablePart, info: e.target.value })}
+                    />
+                  ) : (
+                    <p className="mt-2">{part.info}</p>
+                  )}
+                  {
+                    isEditing &&
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSave}
+                    >
+                      Save
+                    </button>
+                  }
+                  <div>
+                    {vehicle && (
+                      <div className="mt-5">
+                        <h3 className="text-xl font-bold">Vehicle Information:</h3>
+                        <p>
+                          <strong>Vehicle:</strong> {vehicle.brand} {vehicle.model} (
+                          {vehicle.year})
+                        </p>
+                        <p>
+                          <strong>Type:</strong> {vehicle.type}
+                        </p>
+                        <p>
+                          <strong>Mileage:</strong> {vehicle.mileage_km} km
+                        </p>
+                        <p>
+                          <strong>Fuel Type:</strong> {vehicle.fuel_type}
+                        </p>
+
+                        <button
+                          className="btn btn-outline mt-2"
+                          onClick={() => router.push(`/vehicles/${vehicle.id}`)}
+                        >
+                          Full Vehicle Details
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
+
               </div>
             ) : (
-              <p className="text-center text-xl">Part not found.</p>
+              <p>Part details not found.</p>
             )}
-
             {/* Tabs */}
             <div className="flex flex-row justify-center items-center space-x-10 w-full mt-10">
               <p
