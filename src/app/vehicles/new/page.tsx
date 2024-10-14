@@ -25,7 +25,7 @@ import {
   VehicleType,
 } from "@/app/types_db";
 import DropDownInput from "@/app/components/DropdownInput";
-
+import QuickLookupModal from "../lookup";
 const NewVehicle: React.FC = () => {
   const [vehicleType, setVehicleType] = useState<VehicleType>("Car");
   const [brand, setBrand] = useState<string>("");
@@ -47,6 +47,8 @@ const NewVehicle: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [openQuickLookModal, setOpenQuickLookModal] = useState<boolean>(false);
 
   const vehicleTypes = [
     { type: "Car", label: "Car", icon: FaCar },
@@ -111,6 +113,8 @@ const NewVehicle: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (openQuickLookModal)
+      return;
     // Validate inputs
     if (
       !brand ||
@@ -191,6 +195,43 @@ const NewVehicle: React.FC = () => {
     }
   };
 
+
+
+  const isValidValue = (value: any): boolean => {
+    return value !== null && value !== undefined && value !== -1;
+  };
+
+  const handleQuickLookUpSubmit = (lookupVehicle: any) => {
+    console.log("LOOKED UP VEHICLE: ", lookupVehicle)
+    setOpenQuickLookModal(false);
+    lookupVehicle = lookupVehicle[0];
+
+    if (isValidValue(lookupVehicle.model_make_id)) {
+      setBrand(lookupVehicle.model_make_id);
+    }
+    if (isValidValue(lookupVehicle.model_trim)) {
+      setModel(lookupVehicle.model_trim);
+    }
+    if (isValidValue(lookupVehicle.model_year)) {
+      setYear(lookupVehicle.model_year);
+    }
+    if (isValidValue(lookupVehicle.model_engine_fuel)) {
+      setFuelType(lookupVehicle.model_engine_fuel);
+    }
+    if (isValidValue(lookupVehicle.model_drive)) {
+      setDriveType(lookupVehicle.model_drive);
+    }
+    if (isValidValue(lookupVehicle.model_transmission_type)) {
+      setTransmission(lookupVehicle.model_transmission_type);
+    }
+    if (isValidValue(lookupVehicle.model_seats)) {
+      setNumberOfSeats(lookupVehicle.model_seats);
+    }
+    if (isValidValue(lookupVehicle.model_doors)) {
+      setNumberOfDoors(lookupVehicle.model_doors);
+    }
+  }
+
   if (isLoading) {
     return <LoadingIndicator />;
   }
@@ -202,6 +243,10 @@ const NewVehicle: React.FC = () => {
           <Alert message={message} type={alertType} />
         </div>
       )}
+      {
+        openQuickLookModal &&
+        <QuickLookupModal isOpen={openQuickLookModal} onClose={() => setOpenQuickLookModal(false)} onSubmit={handleQuickLookUpSubmit} />
+      }
 
       <div>
         <div>
@@ -231,18 +276,16 @@ const NewVehicle: React.FC = () => {
                   onClick={() => setVehicleType(type as VehicleType)}
                 >
                   <Icon
-                    className={`text-xl ${
-                      vehicleType === type
-                        ? "font-bold text-black"
-                        : "text-gray-400"
-                    }`}
+                    className={`text-xl ${vehicleType === type
+                      ? "font-bold text-black"
+                      : "text-gray-400"
+                      }`}
                   />
                   <p
-                    className={`text-sm ${
-                      vehicleType === type
-                        ? "font-bold text-black"
-                        : "text-gray-400"
-                    }`}
+                    className={`text-sm ${vehicleType === type
+                      ? "font-bold text-black"
+                      : "text-gray-400"
+                      }`}
                   >
                     {label}
                   </p>
@@ -293,7 +336,7 @@ const NewVehicle: React.FC = () => {
 
               <div className="flex flex-col items-center">
                 <div className="w-full text-start">
-                  <button className="btn btn-primary">
+                  <button className="btn btn-primary" onClick={() => setOpenQuickLookModal(true)}>
                     <FaSearch />
                     Quick Lookup
                   </button>
