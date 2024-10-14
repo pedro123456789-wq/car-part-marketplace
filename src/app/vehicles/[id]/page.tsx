@@ -7,8 +7,8 @@ import LoadingIndicator from "@/app/components/LoadingIndicator";
 import NavigationBar from "@/app/components/NavigationBar";
 import Alert from "@/app/components/alert/Alert";
 import { useAlert } from "@/app/components/alert/useAlert";
-import { Vehicle, Part, Wheel } from "@/app/types_db";
-import { FaArrowLeft } from "react-icons/fa";
+import { Vehicle, Part, Wheel, FuelTypeValues, DriveTypeValues, TransmissionTypeValues } from "@/app/types_db";
+import { FaArrowLeft, FaEdit } from "react-icons/fa";
 
 import SellerInformation from "@/app/components/SellerInfo";
 import Inbox from "@/app/components/Message/Inbox";
@@ -34,6 +34,9 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
   const supabase = createFrontEndClient();
 
   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedVehicle, setEditedVehicle] = useState<Vehicle | null>(null);
+
   useEffect(() => {
     const fetchData = async () => {
       // Fetch the logged-in user's UUID
@@ -43,7 +46,6 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
         if (error) {
           console.error("Error fetching session:", error);
         } else if (data.session?.user) {
-          // Set the user's uuid (which is the user's unique identifier in Supabase)
           setLoggedInUserId(data.session.user.id);
         }
       };
@@ -67,6 +69,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
         if (vehicleError) throw vehicleError;
         setVehicle(vehicleData);
+        setEditedVehicle(vehicleData); // Initialize edited vehicle state
 
         // Fetch parts associated with the vehicle
         const { data: partsData, error: partsError } = await supabase
@@ -95,6 +98,43 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
     fetchData();
   }, [vehicleId]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setEditedVehicle((prev) => ({ ...prev!, [name]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!editedVehicle) return;
+
+    try {
+      const { error } = await supabase
+        .from("vehicle")
+        .update({
+          fuel_type: editedVehicle.fuel_type,
+          drive_type: editedVehicle.drive_type,
+          transmission: editedVehicle.transmission,
+          mileage_km: editedVehicle.mileage_km,
+          seats_number: editedVehicle.seats_number,
+          doors_number: editedVehicle.doors_number,
+          details: editedVehicle.details,
+        })
+        .eq("id", editedVehicle.id);
+
+      if (error) throw error;
+
+      setVehicle(editedVehicle);
+      setIsEditing(false);
+      triggerAlert("Vehicle information updated successfully.", "success");
+    } catch (error) {
+      console.error("Error updating vehicle:", error);
+      triggerAlert("Error updating vehicle information.", "error");
+    }
+  };
 
   const handleConversation = async (e: any, recipientId: string) => {
     e.preventDefault();
@@ -132,22 +172,12 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
         conversationId = newConversation.id;
         console.log("Created new conversation:", conversationId);
-
-        // Insert first message in the new conversation
-        // const { error: messageError } = await supabase.from("messages").insert({
-        //     sender_id: loggedInUserId,
-        //     conversation_id: conversationId,
-        //     content: "Hi, Nice to meet you.",
-        // });
-
-        // if (messageError) throw messageError;
       }
-      window.location.href = `/chat?chatId=${conversationId}`
-
+      window.location.href = `/chat?chatId=${conversationId}`;
     } catch (error) {
-      console.log("ERROR TRYING TO HANDLE CONVERSATION[+]")
+      console.log("ERROR TRYING TO HANDLE CONVERSATION[+]");
     }
-  }
+  };
 
   if (isLoading) return <LoadingIndicator />;
 
@@ -173,41 +203,132 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
                   <img
                     src={`/api/files/download?file_name=vehicle-${vehicle.id}`}
                     alt="Vehicle"
-                    className="max-w-full max-h-[500px] object-"
+                    className="max-w-full max-h-[500px] object-cover"
                   />
                 </figure>
                 <div className="card-body">
-                  <h2 className="card-title text-2xl">
-                    {vehicle.brand} {vehicle.model} ({vehicle.year})
+                  <h2 className="card-title text-2xl flex justify-between items-center">
+                    <span>
+                      {vehicle.brand} {vehicle.model} ({vehicle.year})
+                    </span>
+                    {loggedInUserId === vehicle?.creator && (
+                      <FaEdit
+                        className="cursor-pointer"
+                        onClick={handleEdit}
+                      />
+                    )}
                   </h2>
-                  <p>
-                    <strong>Type:</strong> {vehicle.type}
-                  </p>
-                  <p>
-                    <strong>Mileage:</strong> {vehicle.mileage_km} km
-                  </p>
-                  <p>
-                    <strong>Fuel Type:</strong> {vehicle.fuel_type}
-                  </p>
-                  <p>
-                    <strong>Drive Type:</strong> {vehicle.drive_type}
-                  </p>
-                  <p>
-                    <strong>Transmission:</strong> {vehicle.transmission}
-                  </p>
-                  <p>
-                    <strong>Seats:</strong> {vehicle.seats_number}
-                  </p>
-                  <p>
-                    <strong>Doors:</strong> {vehicle.doors_number}
-                  </p>
-                  <p>
-                    <strong>Details:</strong> {vehicle.details}
-                  </p>
+
+                  <div>
+                    {isEditing ? (
+                      <div>
+                        <label>
+                          <strong>Mileage:</strong>
+                          <input
+                            type="number"
+                            name="mileage_km"
+                            value={editedVehicle?.mileage_km || ""}
+                            onChange={handleInputChange}
+                            className="input input-bordered w-full mb-2"
+                          />
+                        </label>
+                        <label>
+                          <strong>Fuel Type:</strong>
+                          <select
+                            name="fuel_type"
+                            value={editedVehicle?.fuel_type || ""}
+                            onChange={handleInputChange}
+                            className="select select-bordered w-full mb-2"
+                          >
+                            {FuelTypeValues.map((fuel) => (
+                              <option key={fuel} value={fuel}>
+                                {fuel}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <strong>Drive Type:</strong>
+                          <select
+                            name="drive_type"
+                            value={editedVehicle?.drive_type || ""}
+                            onChange={handleInputChange}
+                            className="select select-bordered w-full mb-2"
+                          >
+                            {DriveTypeValues.map((drive) => (
+                              <option key={drive} value={drive}>
+                                {drive}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <strong>Transmission:</strong>
+                          <select
+                            name="transmission"
+                            value={editedVehicle?.transmission || ""}
+                            onChange={handleInputChange}
+                            className="select select-bordered w-full mb-2"
+                          >
+                            {TransmissionTypeValues.map((transmission) => (
+                              <option key={transmission} value={transmission}>
+                                {transmission}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          <strong>Seats:</strong>
+                          <input
+                            type="number"
+                            name="seats_number"
+                            value={editedVehicle?.seats_number || ""}
+                            onChange={handleInputChange}
+                            className="input input-bordered w-full mb-2"
+                          />
+                        </label>
+                        <label>
+                          <strong>Doors:</strong>
+                          <input
+                            type="number"
+                            name="doors_number"
+                            value={editedVehicle?.doors_number || ""}
+                            onChange={handleInputChange}
+                            className="input input-bordered w-full mb-2"
+                          />
+                        </label>
+                        <label>
+                          <strong>Details:</strong>
+                          <textarea
+                            name="details"
+                            value={editedVehicle?.details || ""}
+                            onChange={handleInputChange}
+                            className="textarea textarea-bordered w-full mb-2"
+                          />
+                        </label>
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleSave}
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p><strong>Mileage:</strong> {vehicle.mileage_km} km</p>
+                        <p><strong>Fuel Type:</strong> {vehicle.fuel_type}</p>
+                        <p><strong>Drive Type:</strong> {vehicle.drive_type}</p>
+                        <p><strong>Transmission:</strong> {vehicle.transmission}</p>
+                        <p><strong>Seats:</strong> {vehicle.seats_number}</p>
+                        <p><strong>Doors:</strong> {vehicle.doors_number}</p>
+                        <p><strong>Details:</strong> {vehicle.details}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className="text-center text-xl">Vehicle not found.</p>
+              <p>No vehicle found.</p>
             )}
 
             {/* Parts List */}

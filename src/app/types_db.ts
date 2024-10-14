@@ -4,7 +4,7 @@ import { getRange } from "./components/utils";
 export const DriveTypeValues = ['FWD', 'RWD', 'AWD', '4WD', 'Other'] as const;
 export type DriveType = typeof DriveTypeValues[number];
 
-export const FuelTypeValues = ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Other'] as const;
+export const FuelTypeValues = ['Petrol', 'Diesel', 'Electric', 'Hybrid', 'Gasoline', 'Other'] as const;
 export type FuelType = typeof FuelTypeValues[number];
 
 export const TransmissionTypeValues = ['Automatic', 'Semi-automatic', 'Manual', 'Other'] as const;
