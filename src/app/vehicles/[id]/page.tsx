@@ -36,6 +36,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editedVehicle, setEditedVehicle] = useState<Vehicle | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,6 +111,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
   const handleSave = async () => {
     if (!editedVehicle) return;
+    setIsSaving(true);
 
     try {
       const { error } = await supabase
@@ -129,10 +131,39 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
 
       setVehicle(editedVehicle);
       setIsEditing(false);
+      setIsSaving(false);
       triggerAlert("Vehicle information updated successfully.", "success");
     } catch (error) {
       console.error("Error updating vehicle:", error);
       triggerAlert("Error updating vehicle information.", "error");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!vehicleId) {
+      console.error("Vehicle ID not provided.");
+      return;
+    }
+    setIsSaving(true);
+
+    try {
+      const { error } = await supabase
+        .from('vehicle')
+        .delete()
+        .eq('id', vehicleId)
+        .eq('creator', loggedInUserId)
+
+
+      if (error) {
+        console.error("Error deleting vehicle:", error);
+        alert("Failed to delete the vehicle. Please try again.");
+        return;
+      }
+      setIsSaving(false);
+      router.push('/myParts');
+    } catch (err) {
+      console.error("Unexpected error during vehicle deletion:", err);
+      alert("An unexpected error occurred. Please try again.");
     }
   };
 
@@ -179,7 +210,7 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
     }
   };
 
-  if (isLoading) return <LoadingIndicator />;
+  if (isLoading || isSaving) return <LoadingIndicator />;
 
   return (
     <>
@@ -324,6 +355,17 @@ const VehicleInfo: React.FC<Props> = ({ params }) => {
                         <p><strong>Details:</strong> {vehicle.details}</p>
                       </div>
                     )}
+                    {
+                      loggedInUserId === vehicle?.creator &&
+                      <div className="mt-3">
+                        <button
+                          className="btn btn-primary"
+                          onClick={handleDelete}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    }
                   </div>
                 </div>
               </div>

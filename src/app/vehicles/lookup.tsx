@@ -37,7 +37,6 @@ const QuickLookupModal = ({ isOpen, onClose, onSubmit }: LookupProp) => {
             const { data: makesData, error } = await supabase
                 .from("car_models")
                 .select("model_make_id")
-                .order('model_make_id');
 
             if (error) {
                 console.error("Error fetching makes:", error);
@@ -140,13 +139,13 @@ const QuickLookupModal = ({ isOpen, onClose, onSubmit }: LookupProp) => {
 
                 {selectedMakeId && (
                     <div className="mb-4">
-                        <label htmlFor="models" className="block mb-2">Select Model Trim:</label>
+                        <label htmlFor="models" className="block mb-2">Select Model:</label>
                         <select
                             id="models"
                             onChange={(e) => setSelectedModelTrim(e.target.value)}
                             className="w-full p-2 border rounded"
                         >
-                            <option value="">Select Model Trim</option>
+                            <option value="">Select Model</option>
                             {models.map((model) => (
                                 <option key={model} value={model}>
                                     {model}

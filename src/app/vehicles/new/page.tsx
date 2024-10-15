@@ -216,13 +216,22 @@ const NewVehicle: React.FC = () => {
       setYear(lookupVehicle.model_year);
     }
     if (isValidValue(lookupVehicle.model_engine_fuel)) {
-      setFuelType(lookupVehicle.model_engine_fuel);
+      if (FuelTypeValues.includes(lookupVehicle.model_engine_fuel))
+        setFuelType(lookupVehicle.model_engine_fuel);
+      else
+        setFuelType('Other');
     }
     if (isValidValue(lookupVehicle.model_drive)) {
-      setDriveType(lookupVehicle.model_drive);
+      if (DriveTypeValues.includes(lookupVehicle.model_drive))
+        setDriveType(lookupVehicle.model_drive);
+      else
+        setDriveType('Other')
     }
     if (isValidValue(lookupVehicle.model_transmission_type)) {
-      setTransmission(lookupVehicle.model_transmission_type);
+      if (TransmissionTypeValues.includes(lookupVehicle.model_transmission_type))
+        setTransmission(lookupVehicle.model_transmission_type);
+      else
+        setTransmission('Other')
     }
     if (isValidValue(lookupVehicle.model_seats)) {
       setNumberOfSeats(lookupVehicle.model_seats);

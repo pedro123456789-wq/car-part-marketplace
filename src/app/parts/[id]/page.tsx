@@ -42,6 +42,8 @@ const PartDetails: React.FC<Props> = ({ params }) => {
   // Editable state management
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editablePart, setEditablePart] = useState<Part | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
 
   useEffect(() => {
     // Fetch the logged-in user's UUID
@@ -183,6 +185,7 @@ const PartDetails: React.FC<Props> = ({ params }) => {
 
   const handleSave = async () => {
     if (!editablePart) return;
+    setIsSaving(true);
 
     try {
       const { error } = await supabase
@@ -198,6 +201,7 @@ const PartDetails: React.FC<Props> = ({ params }) => {
 
       setPart(editablePart); // Update the part state with the edited values
       setIsEditing(false);
+      setIsSaving(false);
       triggerAlert("Part updated successfully.", "success");
     } catch (error) {
       console.error("Error updating part:", error);
@@ -205,7 +209,37 @@ const PartDetails: React.FC<Props> = ({ params }) => {
     }
   }
 
-  if (isLoading) return <LoadingIndicator />;
+  const handleDelete = async () => {
+    if (!partId) {
+      console.error("Part ID not provided.");
+      return;
+    }
+    setIsSaving(true);
+
+
+    try {
+      const { error } = await supabase
+        .from('part')
+        .delete()
+        .eq('id', partId)
+        .eq('owner_id', loggedInUserId)
+
+
+      if (error) {
+        console.error("Error deleting part:", error);
+        alert("Failed to delete the part. Please try again.");
+        return;
+      }
+      triggerAlert("Part updated successfully.", "success");
+      setIsSaving(false);
+      router.push('/myParts');
+    } catch (err) {
+      console.error("Unexpected error during part deletion:", err);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  if (isLoading || isSaving) return <LoadingIndicator />;
 
   return (
     <>
@@ -277,6 +311,17 @@ const PartDetails: React.FC<Props> = ({ params }) => {
                     >
                       Save
                     </button>
+                  }
+                  {
+                    loggedInUserId == part?.owner_id &&
+                    <div className="mt-3">
+                      <button
+                        className="btn btn-primary"
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   }
                   <div>
                     {vehicle && (
