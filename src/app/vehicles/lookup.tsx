@@ -35,13 +35,14 @@ const QuickLookupModal = ({ isOpen, onClose, onSubmit }: LookupProp) => {
     useEffect(() => {
         const fetchMakes = async () => {
             const { data: makesData, error } = await supabase
-                .from("car_models")
-                .select("model_make_id")
+                .from("distinct_makes")
+                .select("model_make_id");
+
 
             if (error) {
                 console.error("Error fetching makes:", error);
             } else {
-                setMakes(deduplicateArray(makesData, 'model_make_id'));
+                setMakes(makesData.map(item => item.model_make_id));
             }
         };
 
@@ -54,15 +55,14 @@ const QuickLookupModal = ({ isOpen, onClose, onSubmit }: LookupProp) => {
 
         const fetchModels = async () => {
             const { data: modelsData, error } = await supabase
-                .from("car_models")
+                .from("distinct_models")
                 .select("model_trim")
-                .eq("model_make_id", selectedMakeId)
-                .order('model_trim');
+                .eq("model_make_id", selectedMakeId);
 
             if (error) {
                 console.error("Error fetching models:", error);
             } else {
-                setModels(deduplicateArray(modelsData, 'model_trim'));
+                setModels(modelsData.map(item => item.model_trim));
             }
         };
 
@@ -75,16 +75,15 @@ const QuickLookupModal = ({ isOpen, onClose, onSubmit }: LookupProp) => {
 
         const fetchYears = async () => {
             const { data: yearsData, error } = await supabase
-                .from("car_models")
+                .from("distinct_years")
                 .select("model_year")
                 .eq("model_make_id", selectedMakeId)
-                .eq("model_trim", selectedModelTrim)
-                .order('model_year');
+                .eq("model_trim", selectedModelTrim);
 
             if (error) {
                 console.error("Error fetching years:", error);
             } else {
-                setYears(deduplicateArray(yearsData, 'model_year'));
+                setYears(yearsData.map(item => item.model_year));
             }
         };
 
