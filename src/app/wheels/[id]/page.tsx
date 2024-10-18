@@ -124,6 +124,10 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
   const handleConversation = async (e: any, recipientId: string) => {
     e.preventDefault();
     try {
+      if (!loggedInUserId) {
+        window.location.href = "/login";
+        return;
+      }
       // Check if a conversation already exists between loggedInUserId and recipientId
       const { data: existingConversation, error: conversationCheckError } = await supabase
         .from("conversation")
@@ -310,7 +314,7 @@ const WheelDetails: React.FC<Props> = ({ params }) => {
             </div>
           </div>
           {
-            wheel && loggedInUserId &&
+            wheel &&
             <div className="flex-1 flex flex-col gap-5">
               <SellerInformation sellerId={wheel?.owner_id} />
               {

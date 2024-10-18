@@ -141,6 +141,11 @@ const PartDetails: React.FC<Props> = ({ params }) => {
   const handleConversation = async (e: any, recipientId: string) => {
     e.preventDefault();
     try {
+      if (!loggedInUserId) {
+        window.location.href = "/login";
+        return;
+      }
+
       const { data: existingConversation, error: conversationCheckError } = await supabase
         .from("conversation")
         .select("*")
@@ -464,7 +469,7 @@ const PartDetails: React.FC<Props> = ({ params }) => {
             </div>
           </div>
           {
-            part && loggedInUserId &&
+            part &&
             <div className="flex-1 flex flex-col gap-5">
               <SellerInformation sellerId={part?.owner_id} />
               {
